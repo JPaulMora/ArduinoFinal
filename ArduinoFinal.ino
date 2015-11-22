@@ -22,12 +22,11 @@ int dip1 = 7;
 int dip2 = 8;
 
 //Push
-int push1=2;
+int push1=2; //variables de los Push, son = al # de pin. (ver Breadboard).
 int push2=4;
 
 //Other
 int pot = 0;
-int iVal1,iVal2;
 
 void setup() {
   Serial.begin(9600);
@@ -46,7 +45,11 @@ void setup() {
   pinMode(dip2, INPUT_PULLUP);   //INPUT_PULLUP: El estado natural del pin es HIGH.
 
 
- 
+          /*-----Inicializacion de Push -------*/
+	pinMode(push1,INPUT_PULLUP);
+	pinMode(push2,INPUT_PULLUP);  //tenes que decirle al Arduino como usarlos.
+																//usamos INPUT_PULLUP Y NO INPUT, porque no tenemos 2k resistores (entonces usamos el interno como en los dip).
+
 }
 
 /************** Funciones ********************/
@@ -67,8 +70,8 @@ int funcNum(){
 
 void loop() {
   Serial.println(funcNum());
-	iVal1=digitalRead(push1);
-	iVal2=digitalRead(push2);
+	int iVal1=digitalRead(push1); //podemos iniciar las variables localmente.
+	int iVal2=digitalRead(push2); //Apachado ahora conecta a low  o negativo (ver Breadboard).
 //Funcion 1
 	//DIP1==HIGH, DIP2==HIGH;
 if (funcNum() == 1){
@@ -109,19 +112,29 @@ if (funcNum() == 1){
   Serv.write(val); //Enviar posicion de 'val' (0-180) al servo.
 
 //Funcion 2
-	//Dip1==LOW; Dp2==High;
+	//Dip1==LOW; Dp2==High; 0 + 2 = 2
 }
 else if(funcNum() == 2)
 {
-	if(iVal1==0)//mientras el push esta apachado, es LOW
+	if(iVal1==LOW && iVal2 == HIGH)   //Asegurarnos que **SOLO 1** se esta apachando o las dos condiciones se vuelven 'true'
+								//mientras el push esta apachado, es LOW 
+								//DigitalRead se tiene que comparar con HIGH o LOW, analog se compara con numeros.
 {
 	digitalWrite(led3,HIGH);
 	digitalWrite(led5,HIGH);
 	digitalWrite(led6,HIGH);
 	digitalWrite(led11,HIGH);
 	delay(100);
+
+// LEDs estaran encendidos por 100ms, hay que apagarlos por 100ms para que 'titilen'. 
+
+	digitalWrite(led3,LOW);
+	digitalWrite(led5,LOW);
+	digitalWrite(led6,LOW);
+	digitalWrite(led11,LOW);
+	delay(100);
 }
-	else if(iVal2==0)
+	else if(iVal2==LOW)
 {
 	digitalWrite(led3,LOW);
 	digitalWrite(led5,HIGH);
