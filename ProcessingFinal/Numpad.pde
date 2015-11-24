@@ -10,6 +10,7 @@ class Numpad {
    Numpad(int c, int r, color bak,color def, color hover, color click) {
       col = c;
       row = r;
+      this.bak = bak;
       wid = (col*70)+(col*20);
       hei = (row*70)+(row*20);
       total = c*r;
@@ -36,12 +37,17 @@ class Numpad {
       } 
  }
  void update(){
-   rect(wd+(this.wid/2),hg+(this.hei/2),this.wid+20,this.hei+20);
    fill(bak);
-  for (int i= 0; i < total; i++){
+   rect(wd+(this.wid/2),hg+(this.hei/2),this.wid+20,this.hei+20);
+  updatebs(); 
+ }
+ 
+ void updatebs(){
+   for (int i= 0; i < total; i++){
     this.Botones[i].active();
   }
  }
+ 
  void sendClick() {
    for (int i= 0; i < total; i++){
     this.Botones[i].pressed();

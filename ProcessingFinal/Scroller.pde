@@ -48,6 +48,7 @@ class Scroller {
   
   void sendOff() {
         move = false;
+        println(Clvl);
   }
   
   void sendClick(){

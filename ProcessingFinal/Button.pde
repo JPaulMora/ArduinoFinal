@@ -40,12 +40,10 @@ void active() {
         fill(def); 
      } else if (!over && clik) {
        fill(cli);
-       println(ret);
      } else if (over && !clik) {
         fill(hov);
      } else if (over && clik) {
         fill(cli); 
-        println(ret);
      }
       rect(this.wid,this.hei,70,70);
   }
