@@ -28,6 +28,16 @@ int push2=4;
 //Other
 int pot = 0;
 
+//SERIAL COMM
+
+byte Send[] = {0,1,2,3,4,5,6,7}; // Leds-4 (0/255) Pot (0/255) Dips-2 (0/1)
+byte Recv[] = {0, 0, 0, 0, 0}; //Dip1,Dip2, Push1,Push2 (0/1), Slider (0/255)
+
+void serialEvent(){
+ // Serial.readBytes(Recv,5);
+  Serial.write(Send,7);
+}
+
 void setup() {
   Serial.begin(9600);
   Serv.attach(9);  //Pin donde se encuentra el Servo
@@ -54,22 +64,31 @@ void setup() {
 
 int funcNum()
 {
+  boolean updated = false;
   int suma = 4; //Dipswitch conecta pins a GND para ponerlos en LOW, hacemos conteo en reversa (if HIGH, restar a 'suma').
-  if (digitalRead(dip1) == HIGH){
+  if (digitalRead(dip1) == HIGH || Recv[0] == 1){
+    //UpdateStatus(5,0);
+    updated = true;
     suma -= 1; // si dip1 == HIGH (switch off), suma = 4 -1 = 3; correr funcion 3.
   }
-  if (digitalRead(dip2) == HIGH){
+  if (digitalRead(dip2) == HIGH || Recv[1] == 1){
     suma -= 2; // Si dip2 == HIGH, suma = 4 -2 = 2 correr funcion 2.
+    //UpdateStatus(6,0);
+    updated = true;
   }                       
   return suma;  //si Ningun pin esta conectado a GND, significa que los 2 dipswitches estan en 'OFF' y el resultado de 4 -2-1 = 1; entonces correr funcion 1.
                //si los 2 switches estan en LOW (switches ON), significa que a 'suma' no se le resta nada y 4 -0 = 4; correr funcion 4.
+ if (!updated){
+   //UpdateStatus(5,1);
+   //UpdateStatus(6,1);
+ }
 }
 
 /************ Fin Funciones ******************/
 
 void loop() 
 {
-  Serial.println(funcNum());
+  //Serial.println(funcNum());
   int iVal1=digitalRead(push1); //podemos iniciar las variables localmente.
   int iVal2=digitalRead(push2); //Apachado ahora conecta a low  o negativo (ver Breadboard).
   //Funcion 1
@@ -77,37 +96,58 @@ void loop()
   if (funcNum() == 1){
   val = analogRead(pot); //Leer voltaje del potenciometro {0,1023} 
   val = map(val,0,1023,0,180); //convertir voltaje del potenciometro 'pot' {0,1023} -> {0,180}
+  UpdateStatus(0,val);
 
   //LEDS
   if (val <= 45 && val > 5){ // Activado si 'val' entre (0,45}.
-    int valocal = map(val,0,45,0,180); //Variable local, convierte 'val' entre {0,45} -> {0,180}
+    int valocal = map(val,0,45,0,255); //Variable local, convierte 'val' entre {0,45} -> {0,255}
     analogWrite(led3,valocal);
+    UpdateStatus(0,valocal);
     digitalWrite(led5,LOW);
+    UpdateStatus(1,0);
     digitalWrite(led6,LOW);
+    UpdateStatus(2,0);
     digitalWrite(led11,LOW);
+    UpdateStatus(3,0);
   }else if (val > 45 && val <= 90){ // Activado si 'val' entre (45,90}.
-    int valocal = map(val,46,90,0,180);
+    int valocal = map(val,46,90,0,255);
     digitalWrite(led3,HIGH);
+    UpdateStatus(0,255);
     analogWrite(led5,valocal);
+    UpdateStatus(1,valocal);
     digitalWrite(led6,LOW);
+    UpdateStatus(2,0);
     digitalWrite(led11,LOW);
+    UpdateStatus(3,0);
   }else if(val > 90 && val <= 135){ // Activado si 'val' entre (90,135}.
-    int valocal = map(val,90,135,0,180);
+    int valocal = map(val,90,135,0,255);
     digitalWrite(led3,HIGH);
+    UpdateStatus(0,255);
     digitalWrite(led5,HIGH);
+    UpdateStatus(1,255);
     analogWrite(led6,valocal);
+    UpdateStatus(2,valocal);
     digitalWrite(led11,LOW);
+    UpdateStatus(3,0);
   } else if(val >135 && val <= 180){ // Activado si 'val' entre (135,180}.
-    int valocal = map(val,135,180,0,180);
+    int valocal = map(val,135,180,0,255);
     digitalWrite(led3,HIGH);
+    UpdateStatus(0,255);
     digitalWrite(led5,HIGH);
+    UpdateStatus(1,255);
     digitalWrite(led6,HIGH);
+    UpdateStatus(2,255);
     analogWrite(led11,valocal);
+    UpdateStatus(3,valocal);
   }else{     //       /      /      /  Si 'val' == 0 apagar todos los LEDs
     digitalWrite(led3,LOW);
+    UpdateStatus(0,0);
     digitalWrite(led5,LOW);
+    UpdateStatus(1,0);
     digitalWrite(led6,LOW);
+    UpdateStatus(2,0);
     digitalWrite(led11,LOW);
+    UpdateStatus(3,0);
   }
   Serv.write(val); //Enviar posicion de 'val' (0-180) al servo.
 
@@ -121,6 +161,7 @@ void loop()
                   //DigitalRead se tiene que comparar con HIGH o LOW, analog se compara con numeros.
   {
     digitalWrite(led3,HIGH);
+    
     digitalWrite(led5,HIGH);
     digitalWrite(led6,HIGH);
     digitalWrite(led11,HIGH);
@@ -233,5 +274,13 @@ void loop()
     }
     
   }
+
+  
   delay(15);  //Esperara 15ms antes de reiniciar loop.
 }
+
+void UpdateStatus(int pos, int val){
+ // Send[pos] = (byte)val;
+}
+
+

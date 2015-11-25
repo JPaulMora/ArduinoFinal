@@ -18,6 +18,17 @@ Serial Se;
 Numpad Dips;
 Pcontainer Pushs;
 Scroller Sc;
+
+int interval = 100;
+int previousMillis = 0;
+int currentMillis = 0;
+
+byte[] RecArd = new byte[5];
+int[] RecArdInt = {0, 0, 0, 0, 0};
+byte[] SendArd = new byte[6];
+int[] SendArdInt = {1, 0, 1, 1, 255};
+
+
 int rads = 0;
 int rads2 = rads + 180;
 color black = #000000; 
@@ -91,8 +102,8 @@ void mouseClicked() {
 void mouseReleased() {
   Pushs.SendRels();
   Sc.sendOff();
-  rads += 4;
-  rads2 += 4;
+  rads += 10;
+  rads2 += 10;
   
 }
 
@@ -100,4 +111,26 @@ void mousePressed() {
   Pushs.sendClick();
   Sc.sendClick();
   Arduino.rotateX(1);
+}
+
+//SERIAL COMM
+
+void serial_comm() {
+  // Escritura al puerto serial
+  while (true) {
+    currentMillis = millis();
+
+    if (currentMillis - previousMillis >= interval) {
+      previousMillis = currentMillis;
+      for (int i = 0; i < 6; i++)
+        SendArd[i] = byte(SendArdInt[i]);
+      Se.write(SendArd);
+    }
+  }
+}
+void serialEvent(Serial Se) {
+  // Lectura de buffer serial
+  Se.readBytes(RecArd);
+  for (int i = 0; i < 5; i++)
+    RecArdInt[i] = RecArd[i] & 0xFF;
 }
