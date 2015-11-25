@@ -36,8 +36,6 @@ void setup() {
   pinMode(led5, OUTPUT);//LED2   
   pinMode(led6, OUTPUT);//LED3
   pinMode(led11, OUTPUT);//LED4
-  pinMode(2,INPUT);//PUSH 1
-  pinMode(4,INPUT);//PUSH 2
   
 
            /*-----Inicializacion de Dips -------*/
@@ -81,7 +79,7 @@ void loop()
   val = map(val,0,1023,0,180); //convertir voltaje del potenciometro 'pot' {0,1023} -> {0,180}
 
   //LEDS
-  if (val <= 45 && val > 0){ // Activado si 'val' entre (0,45}.
+  if (val <= 45 && val > 5){ // Activado si 'val' entre (0,45}.
     int valocal = map(val,0,45,0,180); //Variable local, convierte 'val' entre {0,45} -> {0,180}
     analogWrite(led3,valocal);
     digitalWrite(led5,LOW);

@@ -1,5 +1,5 @@
 import processing.serial.*;
-Serial s;
+Serial Se;
 
 //Processing para Proyecto Final 
 // Juan Pablo Mora 15799
@@ -18,6 +18,8 @@ Serial s;
 Numpad Dips;
 Pcontainer Pushs;
 Scroller Sc;
+int rads = 0;
+int rads2 = rads + 180;
 color black = #000000; 
 color yellow = #FFC30A; //Yellow
 color red = #B01010; //red
@@ -27,6 +29,7 @@ color c3 = #C8D2DC; //Light gray
 color ArdBak = #1b717e;
 color CPanel = #5fd331;
 
+PShape Arduino,ArTail,ServoTail,ServoHead;  // Shapes objects
 
 void setup(){
   rectMode(CENTER);
@@ -38,16 +41,46 @@ void setup(){
   Dips.build(50,60);
   Pushs.build(50,230,8,0);
   
+   //Figuras Below           :)
+       /************** Arduino CPanel *************/
+  ArTail = createShape();
+  ArTail.beginShape();
+  ArTail.fill(ArdBak);
+  ArTail.vertex(0, 0);
+  ArTail.vertex(0,250);
+  ArTail.vertex(25, 230);
+  ArTail.vertex(25, 20);
+  ArTail.noStroke();
+  ArTail.endShape(CLOSE);
+  
+  Arduino = createShape(RECT,240,575,450,350);
+  Arduino.setFill(ArdBak);
+  Arduino.setStroke(false);
+  
+
+  ServoHead = createShape(ELLIPSE, 100, 590, 70, 70);
+  ServoHead.setFill(black);
+  ServoTail = createShape(ELLIPSE, 100, 590, 30, 30);
+  ServoTail.setFill(black);
+
+   /************* Internals ***********/
+  
 }
 
 void draw(){
   fill(CPanel);
   rect(250,190,470,350);
-  fill(ArdBak);
-  rect(250,575,470,350);
   Dips.update();
   Pushs.update();
   Sc.makeScroll();
+  shape(ArTail,465, 480);
+  shape(Arduino);
+  shape(ServoHead);
+  fill(red);
+  arc(100, 590, 60, 60, radians(rads), radians(rads2), CHORD);
+  fill(black);
+  arc(100, 590, 60, 60, radians(0), radians(180), CHORD);
+  shape(ServoTail);
 
 }
 void mouseClicked() {
@@ -58,10 +91,13 @@ void mouseClicked() {
 void mouseReleased() {
   Pushs.SendRels();
   Sc.sendOff();
+  rads += 4;
+  rads2 += 4;
   
 }
 
 void mousePressed() {
   Pushs.sendClick();
   Sc.sendClick();
+  Arduino.rotateX(1);
 }
