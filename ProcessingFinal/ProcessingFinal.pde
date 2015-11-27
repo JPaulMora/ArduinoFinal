@@ -19,18 +19,22 @@ Numpad Dips;
 Pcontainer Pushs;
 Scroller Sc;
 
-int interval = 100;
+int interval = 50;
 int previousMillis = 0;
 int currentMillis = 0;
 
-byte[] RecArd = new byte[9];
-int[] RecArdInt = {0, 0, 0, 0, 0,0,0,0,0};
+//byte[] RecArd = new byte[9];
+//int[] RecArdInt = {0,0,0,0,0,0,0,0,0};
+byte[] RecArd = new byte[6];
+int[] RecArdInt = {0,0,0,0,0,0};
+
+
 byte[] SendArd = new byte[6];
-int[] SendArdInt = {1, 0, 1, 1, 255};
+int[] SendArdInt = {0,0,0,0,0,0};
 
 
 int rads = 0;
-int rads2 = rads + 180;
+int rads2 = 180;
 color black = #000000; 
 color yellow = #FFC30A; //Yellows
 color red = #B01010; //red
@@ -40,7 +44,7 @@ color c3 = #C8D2DC; //Light gray
 color ArdBak = #1b717e;
 color CPanel = #5fd331;
 
-PShape Arduino,ArTail,ServoTail,ServoHead;  // Shapes objects
+PShape Arduino,ArTail,ServoTail,ServoHead,LedC,Led1,Led2,Led3,Led4;  // Shapes objects
 
 void setup(){
   rectMode(CENTER);
@@ -68,6 +72,9 @@ void setup(){
   Arduino.setFill(ArdBak);
   Arduino.setStroke(false);
   
+  LedC = createShape(RECT,340,590,250,80);
+  LedC.setFill(yellow);
+  LedC.setStroke(false);
 
   ServoHead = createShape(ELLIPSE, 100, 590, 70, 70);
   ServoHead.setFill(black);
@@ -75,6 +82,7 @@ void setup(){
   ServoTail.setFill(black);
 
    /************* Internals ***********/
+   thread("serial_comm"); 
   
 }
 
@@ -92,7 +100,21 @@ void draw(){
   fill(black);
   arc(100, 590, 60, 60, radians(0), radians(180), CHORD);
   shape(ServoTail);
+  shape(LedC);
+  fill(RecArdInt[0]);
+  rect(250,590,30,30);
+  fill(RecArdInt[1]);
+  rect(310,590,30,30);
+  fill(RecArdInt[2]);
+  rect(370,590,30,30);
+  fill(RecArdInt[3]);
+  rect(430,590,30,30);
+  updateFuncs(Dips.whosON());
+  updatePush(Pushs.whosON());
   readfrom();
+  rads = RecArdInt[4];
+  rads2 = rads + 180;
+  println(RecArdInt);
 
 }
 void mouseClicked() {
@@ -113,8 +135,36 @@ void mousePressed() {
   Arduino.rotateX(1);
 }
 
+void updateFuncs(int[] list){
+  if (list[0] == 1){
+    SendArdInt[0] = 1;
+  }else if (list[0] == 0){
+    SendArdInt[0] = 0;
+  }
+  
+  if (list[1] == 1){
+    SendArdInt[1] = 1;
+  }else if (list[1] == 0){
+    SendArdInt[1] = 0;
+  }   
+}
+
+void updatePush(int[] list){
+  if (list[0] == 1){
+    SendArdInt[2] = 1;
+  }else if (list[0] == 0){
+    SendArdInt[2] = 0;
+  }
+  
+  if (list[1] == 1){
+    SendArdInt[3] = 1;
+  }else if (list[1] == 0){
+    SendArdInt[3] = 0;
+  }   
+}
+
 //SERIAL COMM
-/*
+
 void serial_comm() {
   // Escritura al puerto serial
   while (true) {
@@ -128,7 +178,8 @@ void serial_comm() {
     }
   }
 }
-*/
+
+
 void readfrom() {
   while (Se.available() > 0) {
     RecArd = Se.readBytes();
@@ -137,9 +188,8 @@ void readfrom() {
     try{
         RecArdInt[i++] = parseInt(b);
       } catch(Exception e){
-        RecArdInt[i] = 0;
+        RecArdInt[1] = 0;
       }
     }
-    println(RecArd);
   }
 }

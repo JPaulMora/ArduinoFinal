@@ -53,4 +53,18 @@ class Numpad {
     this.Botones[i].pressed();
   }
  }
+
+int[] whosON(){
+  int count = 0;
+  int[] botlist = new int[total];
+  for (Button b: Botones){
+    if (b.isON()){
+      botlist[count] = 1;
+    }else{
+      botlist[count] = 0;
+    }
+    count++;
+  }
+    return botlist;
+  }
 }

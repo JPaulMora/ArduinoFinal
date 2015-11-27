@@ -47,6 +47,11 @@ void active() {
      }
       rect(this.wid,this.hei,70,70);
   }
+  boolean isON(){
+  return this.clik;
+  }
+  
+  
+}
 
-
-}    
+  

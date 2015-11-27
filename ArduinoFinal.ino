@@ -33,12 +33,7 @@ int val=analogRead(pot);//Lee potenciometro de 0-1023;
 //SERIAL COMM
 
 byte Send[] = {0,0,0,0,0,0,0,0,0}; // Leds-4 (0/255) Pot (0/255) Dips-2 (0/1) Push2(0/3)
-byte Recv[] = {0, 0, 0, 0, 0}; //Dip1,Dip2, Push1,Push2 (0/1), Slider (0/255)
-
-void serialEvent(){
- Serial.readBytes(Recv,5);
- Serial.write(Send,9);
-}
+byte Recv[] = {0, 0, 0, 0, 0, 0}; //Dip1,Dip2, Push1,Push2 (0/1), Slider (0/255)
 
 void setup() {
   Serial.begin(9600);
@@ -68,27 +63,33 @@ int funcNum()
 {
   int suma = 4; //Dipswitch conecta pins a GND para ponerlos en LOW, hacemos conteo en reversa (if HIGH, restar a 'suma').
   if (digitalRead(dip1) == HIGH || Recv[0] == 1){
+    Send[5] = 214;
     suma -= 1; // si dip1 == HIGH (switch off), suma = 4 -1 = 3; correr funcion 3.
   }
   if (digitalRead(dip2) == HIGH || Recv[1] == 1){
+    Send[6] = 255;
     suma -= 2; // Si dip2 == HIGH, suma = 4 -2 = 2 correr funcion 2.
   }                       
   return suma;  //si Ningun pin esta conectado a GND, significa que los 2 dipswitches estan en 'OFF' y el resultado de 4 -2-1 = 1; entonces correr funcion 1.
                //si los 2 switches estan en LOW (switches ON), significa que a 'suma' no se le resta nada y 4 -0 = 4; correr funcion 4.
-
+ 
 }
 
 /************ Fin Funciones ******************/
 
 void loop() 
 {
+  Send[4] = val;
   //Serial.println(funcNum());
   int iVal1=digitalRead(push1); //podemos iniciar las variables localmente.
   int iVal2=digitalRead(push2); //Apachado ahora conecta a low  o negativo (ver Breadboard).
   //Funcion 1
   //DIP1==HIGH, DIP2==HIGH;
-  if (funcNum() == 1){
+  
   serialEvent();
+  
+  if (funcNum() == 1){
+  Serial.println(val);
   val = map(val,0,1023,0,180); //convertir voltaje del potenciometro 'pot' {0,1023} -> {0,180}
 
   //LEDS
@@ -98,30 +99,35 @@ void loop()
     digitalWrite(led5,LOW);
     digitalWrite(led6,LOW);
     digitalWrite(led11,LOW);
-
+    UpdateLeds(valocal,0,0,0);
+    
   }else if (val > 45 && val <= 90){ // Activado si 'val' entre (45,90}.
     int valocal = map(val,46,90,0,255);
     digitalWrite(led3,HIGH);
     analogWrite(led5,valocal);
     digitalWrite(led6,LOW);
     digitalWrite(led11,LOW);
+    UpdateLeds(255,valocal,0,0);
   }else if(val > 90 && val <= 135){ // Activado si 'val' entre (90,135}.
     int valocal = map(val,90,135,0,255);
     digitalWrite(led3,HIGH);
     digitalWrite(led5,HIGH);
     analogWrite(led6,valocal);
     digitalWrite(led11,LOW);
+    UpdateLeds(255,255,valocal,0);
   } else if(val >135 && val <= 180){ // Activado si 'val' entre (135,180}.
     int valocal = map(val,135,180,0,255);
     digitalWrite(led3,HIGH);
     digitalWrite(led5,HIGH);
     digitalWrite(led6,HIGH);
     analogWrite(led11,valocal);
+    UpdateLeds(255,255,255,valocal);
   }else{     //       /      /      /  Si 'val' == 0 apagar todos los LEDs
     digitalWrite(led3,LOW);
     digitalWrite(led5,LOW);
     digitalWrite(led6,LOW);
     digitalWrite(led11,LOW);
+    UpdateLeds(0,0,0,0);
   }
   Serv.write(val); //Enviar posicion de 'val' (0-180) al servo.
 
@@ -138,6 +144,7 @@ void loop()
     digitalWrite(led5,HIGH);
     digitalWrite(led6,HIGH);
     digitalWrite(led11,HIGH);
+    UpdateLeds(255,255,255,255);
     delay(100);
   
   // LEDs estaran encendidos por 100ms, hay que apagarlos por 100ms para que 'titilen'. 
@@ -146,6 +153,7 @@ void loop()
     digitalWrite(led5,LOW);
     digitalWrite(led6,LOW);
     digitalWrite(led11,LOW);
+    UpdateLeds(0,0,0,0);
     delay(100);
   }
     else if(iVal2==LOW && iVal1==HIGH)
@@ -154,12 +162,14 @@ void loop()
     digitalWrite(led5,HIGH);
     digitalWrite(led6,LOW);
     digitalWrite(led11,HIGH);
+    UpdateLeds(0,255,0,255);
     delay(100);
   
     digitalWrite(led3,HIGH);
     digitalWrite(led5,LOW);
     digitalWrite(led6,HIGH);
     digitalWrite(led11,LOW);
+    UpdateLeds(255,0,255,0);
     delay(100);
   }
     else //mientras no pasada nada, todo apagado(high)
@@ -182,6 +192,7 @@ void loop()
       digitalWrite(led5,HIGH);
       digitalWrite(led6,HIGH);
       digitalWrite(led11,HIGH);
+      UpdateLeds(255,255,255,255);
       delay(val);
   
   // LEDs estaran encendidos por el valor del potenciometro y se apagaran por el valor del potenciometro 
@@ -190,6 +201,7 @@ void loop()
       digitalWrite(led5,LOW);
       digitalWrite(led6,LOW);
       digitalWrite(led11,LOW);
+      UpdateLeds(0,0,0,0);
       delay(val);
     }
     else if(iVal1==HIGH && iVal2==LOW)
@@ -200,6 +212,7 @@ void loop()
       digitalWrite(led5,HIGH);
       digitalWrite(led6,HIGH);
       digitalWrite(led11,HIGH);
+      UpdateLeds(255,255,255,255);
       Serv.write(val); //Enviar posicion de 'val' (0-180) al servo.
     }
     else//si ambos push==HIGH, mantener todo apagado
@@ -209,11 +222,12 @@ void loop()
       digitalWrite(led6,LOW);
       digitalWrite(led11,LOW);
      }
+     UpdateLeds(intens,intens,intens,intens);
   }
   //funcion 4
   else
   {
-    //settea la intensidad a 15
+    //settea la intensidad a 255
     analogWrite(led3,intens);
     analogWrite(led5,intens);
     analogWrite(led6,intens);
@@ -235,6 +249,7 @@ void loop()
         digitalWrite(led5,LOW);
         digitalWrite(led6,LOW);
         digitalWrite(led11,LOW);
+        intens = 5;
       }
     }
     //push2 presionado, iniciara un conteo para aumentar el birllo del LED
@@ -254,15 +269,22 @@ void loop()
         digitalWrite(led5,HIGH);
         digitalWrite(led6,HIGH);
         digitalWrite(led11,HIGH);
+        intens = 255;
       }
     }
+    UpdateLeds(intens,intens,intens,intens);
   }
   delay(15);  //Esperara 15ms antes de reiniciar loop.
 }
 
-void UpdateStatus(int pos, uint8_t val){
-  Send[pos] = val;  // Esta funcion no sirve, la idea es correcta pero envia 'int's y no 'bytes',
-                    // por eso la voy a cambiar por un switch que decida si hay control 'remoto' o local.
+void UpdateLeds(int l1,int l2,int l3,int l4){
+  Send[0] = l1; 
+  Send[1] = l2;
+  Send[2] = l3;
+  Send[3] = l4;
 }
 
-
+void serialEvent(){
+ Serial.readBytes(Recv,6);
+ Serial.write(Send,6);
+}

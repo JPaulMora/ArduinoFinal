@@ -40,7 +40,6 @@ class Scroller {
     }else{
     Clvl = (int)mapval;
     if (Clvl != (int)mapval){
-      println(Clvl);
     }
     }
 
@@ -48,14 +47,11 @@ class Scroller {
   
   void sendOff() {
         move = false;
-        println(Clvl);
   }
   
   void sendClick(){
     if ( mouseX >= (X-Sx/2) && mouseX <= (X+Sx/2) && mouseY >= (Y-Sy/2) && mouseY <= (Y+Sy/2)) {
       move = true;
-      println(Clvl);
-      
     }
       
       
