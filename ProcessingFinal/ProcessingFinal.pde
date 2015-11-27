@@ -1,12 +1,12 @@
 import processing.serial.*;
-Serial Se;
+Serial Se = new Serial(this, Serial.list()[2], 9600);
 
 //Processing para Proyecto Final 
 // Juan Pablo Mora 15799
 // Irvin Oliva 
 
 /* 1 Scrollbar
-*  2 push buttons
+*  2 push buttons 
 *  2 dips
 *  
 *  4 Leds
@@ -23,8 +23,8 @@ int interval = 100;
 int previousMillis = 0;
 int currentMillis = 0;
 
-byte[] RecArd = new byte[5];
-int[] RecArdInt = {0, 0, 0, 0, 0};
+byte[] RecArd = new byte[9];
+int[] RecArdInt = {0, 0, 0, 0, 0,0,0,0,0};
 byte[] SendArd = new byte[6];
 int[] SendArdInt = {1, 0, 1, 1, 255};
 
@@ -32,7 +32,7 @@ int[] SendArdInt = {1, 0, 1, 1, 255};
 int rads = 0;
 int rads2 = rads + 180;
 color black = #000000; 
-color yellow = #FFC30A; //Yellow
+color yellow = #FFC30A; //Yellows
 color red = #B01010; //red
 color backg = #1E2832; //Blued-Dark-gray.
 color c2 = #646E78; //Dark Gray
@@ -92,11 +92,11 @@ void draw(){
   fill(black);
   arc(100, 590, 60, 60, radians(0), radians(180), CHORD);
   shape(ServoTail);
+  readfrom();
 
 }
 void mouseClicked() {
   Dips.sendClick();
-  
 }
 
 void mouseReleased() {
@@ -114,7 +114,7 @@ void mousePressed() {
 }
 
 //SERIAL COMM
-
+/*
 void serial_comm() {
   // Escritura al puerto serial
   while (true) {
@@ -128,10 +128,18 @@ void serial_comm() {
     }
   }
 }
-
-void serialEvent(Serial Se) {
-  // Lectura de buffer serial
-  Se.readBytes(RecArd);
-  for (int i = 0; i < 5; i++)
-    RecArdInt[i] = RecArd[i] & 0xFF;
+*/
+void readfrom() {
+  while (Se.available() > 0) {
+    RecArd = Se.readBytes();
+    int i=0;
+    for (byte b: RecArd){
+    try{
+        RecArdInt[i++] = parseInt(b);
+      } catch(Exception e){
+        RecArdInt[i] = 0;
+      }
+    }
+    println(RecArd);
+  }
 }
