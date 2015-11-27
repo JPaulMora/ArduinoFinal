@@ -128,6 +128,7 @@ void serial_comm() {
     }
   }
 }
+
 void serialEvent(Serial Se) {
   // Lectura de buffer serial
   Se.readBytes(RecArd);
